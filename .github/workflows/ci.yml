@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  backend-build:
+  build-and-dockerize:
 
     runs-on: ubuntu-latest
 
@@ -15,6 +15,10 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      # =========================
+      # JAVA SETUP
+      # =========================
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -22,23 +26,26 @@ jobs:
           distribution: temurin
           java-version: 25
 
+      # =========================
+      # BUILD BACKEND
+      # =========================
+
       - name: Build Backend
         working-directory: BackendDevOps
         run: mvn clean package -DskipTests
 
-  frontend-build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      # =========================
+      # NODE SETUP
+      # =========================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # =========================
+      # BUILD FRONTEND
+      # =========================
 
       - name: Install Frontend Dependencies
         working-directory: FrontendDevOps
@@ -48,14 +55,9 @@ jobs:
         working-directory: FrontendDevOps
         run: npm run build
 
-  docker-build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      # =========================
+      # DOCKER BUILDS
+      # =========================
 
       - name: Build Backend Docker Image
         working-directory: BackendDevOps
