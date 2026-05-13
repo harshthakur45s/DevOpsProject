@@ -1,0 +1,41 @@
+services:
+
+  mysql:
+    image: mysql:8
+
+    container_name: mysql-container
+
+    environment:
+      MYSQL_ROOT_PASSWORD: harsh45
+      MYSQL_DATABASE: jobquest
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build: ./BackendDevOps
+
+    container_name: backend-container
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - mysql
+
+  frontend:
+    build: ./FrontendDevOps
+
+    container_name: frontend-container
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
