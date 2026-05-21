@@ -62,7 +62,7 @@ const Header = () => {
                 onClick={() => navigate("/jobs")}
                 className="inline-block px-4 py-2 duration-200 hover:bg-slate-900 hover:text-purple-400 rounded-2xl"
               >
-                Job Listings
+                jobs
               </button>
             </li>
           </ul>
