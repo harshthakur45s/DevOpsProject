@@ -10,7 +10,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/applications")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5175")
 public class JobApplicationController {
 
         @Autowired
@@ -49,5 +49,36 @@ public class JobApplicationController {
                 jobApplicationService.getByJob(jobId),
                 HttpStatus.OK
         );
+    }
+
+    // Update status
+    @PostMapping("/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody String status) {
+        try {
+            if (status != null) {
+                status = status.trim();
+                if (status.endsWith("=")) {
+                    status = status.substring(0, status.length() - 1);
+                }
+                if (status.startsWith("\"") && status.endsWith("\"")) {
+                    status = status.substring(1, status.length() - 1);
+                }
+            }
+            JobApplication updated = jobApplicationService.updateStatus(id, status);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Delete application
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteApplication(@PathVariable Long id) {
+        try {
+            jobApplicationService.deleteApplication(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 }

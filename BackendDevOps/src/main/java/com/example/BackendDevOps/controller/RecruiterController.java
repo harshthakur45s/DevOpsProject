@@ -12,7 +12,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/recruiters")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5175")
 public class RecruiterController {
 
     @Autowired
@@ -71,5 +71,43 @@ public class RecruiterController {
         response.put("recruiter", recruiter.get());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/{email}/appendjob")
+    public ResponseEntity<?> appendJob(@PathVariable String email, @RequestBody String jobIdStr) {
+        try {
+            jobIdStr = jobIdStr.trim();
+            if (jobIdStr.endsWith("=")) {
+                jobIdStr = jobIdStr.substring(0, jobIdStr.length() - 1);
+            }
+            if (jobIdStr.startsWith("\"") && jobIdStr.endsWith("\"")) {
+                jobIdStr = jobIdStr.substring(1, jobIdStr.length() - 1);
+            }
+            Long jobId = Long.parseLong(jobIdStr);
+            Recruiter updated = recruiterService.appendJobId(email, jobId);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/{email}/removejob")
+    public ResponseEntity<?> removeJob(@PathVariable String email, @RequestBody String jobIdStr) {
+        try {
+            jobIdStr = jobIdStr.trim();
+            if (jobIdStr.endsWith("=")) {
+                jobIdStr = jobIdStr.substring(0, jobIdStr.length() - 1);
+            }
+            if (jobIdStr.startsWith("\"") && jobIdStr.endsWith("\"")) {
+                jobIdStr = jobIdStr.substring(1, jobIdStr.length() - 1);
+            }
+            Long jobId = Long.parseLong(jobIdStr);
+            Recruiter updated = recruiterService.removeJobId(email, jobId);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

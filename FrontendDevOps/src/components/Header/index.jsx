@@ -15,27 +15,18 @@ const Header = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogout = async (e) => {
-    try {
-      e.preventDefault();
-      setIsLoading(true);
+  const handleLogout = (e) => {
+    e.preventDefault();
+    const apiEndpoint = isRecruiter
+      ? "/api/v1/recruiters/logout"
+      : "/api/v1/candidates/logout";
 
-      const apiEndpoint = isRecruiter
-        ? "/api/v1/recruiters/logout"
-        : "/api/v1/candidates/logout";
+    // Instantly log out on frontend for smooth user experience
+    dispatch(storeLogout());
+    navigate("/");
 
-      const response = await api.post(apiEndpoint);
-      setIsLoading(false);
-
-      if (response.status === 200) {
-        dispatch(storeLogout());
-        navigate("/");
-      }
-    } catch {
-      console.log("Logging out due to error");
-      dispatch(storeLogout());
-      navigate("/");
-    }
+    // Call backend logout in the background
+    api.post(apiEndpoint).catch(() => {});
   };
 
   return (

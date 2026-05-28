@@ -14,6 +14,9 @@ public class JobApplicationService {
     @Autowired
     private JobApplicationRepository jobApplicationRepository;
 
+    @Autowired
+    private com.example.BackendDevOps.repository.JobRepository jobRepository;
+
     public List<JobApplication> allApplications() {
         return jobApplicationRepository.findAll();
     }
@@ -23,7 +26,20 @@ public class JobApplicationService {
     }
 
     public JobApplication apply(JobApplication jobApplication) {
-        jobApplication.setStatus("APPLIED");
+        jobApplication.setStatus("Pending");
+        if (jobApplication.getJobId() != null) {
+            jobRepository.findById(jobApplication.getJobId()).ifPresent(job -> {
+                if (jobApplication.getPosition() == null || jobApplication.getPosition().trim().isEmpty()) {
+                    jobApplication.setPosition(job.getPosition());
+                }
+                if (jobApplication.getCompany() == null || jobApplication.getCompany().trim().isEmpty()) {
+                    jobApplication.setCompany(job.getCompany());
+                }
+                if (jobApplication.getLocation() == null || jobApplication.getLocation().trim().isEmpty()) {
+                    jobApplication.setLocation(job.getLocation());
+                }
+            });
+        }
         return jobApplicationRepository.save(jobApplication);
     }
 
@@ -33,5 +49,23 @@ public class JobApplicationService {
 
     public List<JobApplication> getByJob(Long jobId) {
         return jobApplicationRepository.findByJobId(jobId);
+    }
+
+    public JobApplication updateStatus(Long id, String status) {
+        Optional<JobApplication> appOpt = jobApplicationRepository.findById(id);
+        if (appOpt.isPresent()) {
+            JobApplication app = appOpt.get();
+            app.setStatus(status);
+            return jobApplicationRepository.save(app);
+        }
+        throw new RuntimeException("Application not found with id: " + id);
+    }
+
+    public void deleteApplication(Long id) {
+        if (jobApplicationRepository.existsById(id)) {
+            jobApplicationRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Application not found with id: " + id);
+        }
     }
 }

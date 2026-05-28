@@ -11,7 +11,7 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
+    private String position;
 
     private String description;
 
@@ -19,13 +19,15 @@ public class Job {
 
     private String location;
 
+    private String experience;
+
     @ElementCollection
     @CollectionTable(
             name = "job_skills",
             joinColumns = @JoinColumn(name = "job_id")
     )
     @Column(name = "required_skill")
-    private List<String> requiredSkills;
+    private List<String> skills;
 
 
     // ===== Getter & Setter =====
@@ -38,12 +40,12 @@ public class Job {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getPosition() {
+        return position;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public String getDescription() {
@@ -70,11 +72,19 @@ public class Job {
         this.location = location;
     }
 
-    public List<String> getRequiredSkills() {
-        return requiredSkills;
+    public String getExperience() {
+        return experience;
     }
 
-    public void setRequiredSkills(List<String> requiredSkills) {
-        this.requiredSkills = requiredSkills;
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public List<String> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 }

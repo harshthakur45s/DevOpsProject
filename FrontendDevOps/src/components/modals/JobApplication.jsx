@@ -34,6 +34,9 @@ const JobApplication = ({ isOpen, onClose, job, applyForJob }) => {
     const updatedForm = {
       ...applicationForm,
       jobId: job?.id,
+      position: job?.position,
+      company: job?.company,
+      location: job?.location,
       qualification: applicationForm.qualification?.value,
       skills: applicationForm.skills.map((item) => item.value),
       status: "Pending",

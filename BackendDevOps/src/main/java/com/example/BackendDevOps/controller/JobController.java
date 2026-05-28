@@ -10,7 +10,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/jobs")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5175")
 public class JobController {
 
     @Autowired
@@ -50,6 +50,6 @@ public class JobController {
 
         jobService.deleteJob(id);
 
-        return new ResponseEntity<>("Job deleted", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

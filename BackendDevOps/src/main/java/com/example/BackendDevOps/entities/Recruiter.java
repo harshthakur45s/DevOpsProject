@@ -22,6 +22,14 @@ public class Recruiter {
 
     private String location;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "recruiter_jobs_ids",
+            joinColumns = @JoinColumn(name = "recruiter_id")
+    )
+    @Column(name = "job_id")
+    private List<Long> jobIds = new java.util.ArrayList<>();
+
     @ElementCollection
     @CollectionTable(
             name = "recruiter_jobs",
@@ -87,5 +95,13 @@ public class Recruiter {
 
     public void setJobTitles(List<String> jobTitles) {
         this.jobTitles = jobTitles;
+    }
+
+    public List<Long> getJobIds() {
+        return jobIds;
+    }
+
+    public void setJobIds(List<Long> jobIds) {
+        this.jobIds = jobIds;
     }
 }

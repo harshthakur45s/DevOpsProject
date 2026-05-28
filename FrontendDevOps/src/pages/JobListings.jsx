@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import api from "../api/axiosConfig";
+import { removeJobIdFromRecruiter } from "../store/authSlice";
 import JobsList from "../components/JobsList";
 import JobApplication from "../components/modals/JobApplication";
 import Confirmation from "../components/modals/Confirmation";
 
 const JobListings = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
+  const isRecruiter = useSelector((state) => state.auth.isRecruiter);
 
   const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -19,6 +24,7 @@ const JobListings = () => {
   const [confirmationMessage, setConfirmationMessage] = useState("");
 
   const [jobs, setJobs] = useState([]);
+  const [applicationStatuses, setApplicationStatuses] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
   const [error, setError] = useState(null);
 
@@ -29,6 +35,24 @@ const JobListings = () => {
       try {
         const jobsResponse = await api.get("/api/v1/jobs");
         setJobs(jobsResponse.data);
+
+        if (userData && !isRecruiter) {
+          const appsResponse = await api.get("/api/v1/applications");
+          const candidateApps = appsResponse.data.filter(
+            (app) => app.email === userData.email
+          );
+          
+          const dismissedStr = localStorage.getItem(`dismissed_jobs_${userData.email}`);
+          const dismissedIds = dismissedStr ? JSON.parse(dismissedStr) : [];
+
+          const statuses = {};
+          candidateApps.forEach((app) => {
+            if (!dismissedIds.includes(app.jobId)) {
+              statuses[app.jobId] = app.status;
+            }
+          });
+          setApplicationStatuses(statuses);
+        }
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
         setError("Failed to load jobs. Please try again.");
@@ -38,7 +62,7 @@ const JobListings = () => {
     };
 
     fetchJobs();
-  }, []);
+  }, [userData, isRecruiter]);
 
   const openApplicationModal = () => {
     setIsJobApplicationModalOpen(true);
@@ -62,6 +86,17 @@ const JobListings = () => {
 
       if (applyResponse.status === 201) {
         closeApplicationModal();
+        
+        // Remove from dismissed jobs in localStorage since they are applying again
+        const dismissedStr = localStorage.getItem(`dismissed_jobs_${userData.email}`);
+        const dismissedIds = dismissedStr ? JSON.parse(dismissedStr) : [];
+        const filteredDismissed = dismissedIds.filter((id) => id !== selectedJob.id);
+        localStorage.setItem(`dismissed_jobs_${userData.email}`, JSON.stringify(filteredDismissed));
+
+        setApplicationStatuses({
+          ...applicationStatuses,
+          [selectedJob.id]: "Pending"
+        });
 
         setConfirmationMessage(
           `Successfully applied to the job: ${selectedJob?.position} at ${selectedJob?.company}`
@@ -81,6 +116,25 @@ const JobListings = () => {
     }
   };
 
+  const handleCancelApplication = async (jobId) => {
+    if (!window.confirm("Are you sure you want to dismiss this status and enable re-applying?")) {
+      return;
+    }
+    
+    // Add jobId to dismissed jobs in localStorage
+    const dismissedStr = localStorage.getItem(`dismissed_jobs_${userData.email}`);
+    const dismissedIds = dismissedStr ? JSON.parse(dismissedStr) : [];
+    if (!dismissedIds.includes(jobId)) {
+      dismissedIds.push(jobId);
+      localStorage.setItem(`dismissed_jobs_${userData.email}`, JSON.stringify(dismissedIds));
+    }
+
+    // Remove jobId from applicationStatuses state so button resets to "Apply"
+    const updatedStatuses = { ...applicationStatuses };
+    delete updatedStatuses[jobId];
+    setApplicationStatuses(updatedStatuses);
+  };
+
   const deleteJob = async (job) => {
     setActionLoading(true);
 
@@ -94,6 +148,7 @@ const JobListings = () => {
         );
 
         if (removeResponse.status === 200) {
+          dispatch(removeJobIdFromRecruiter({ jobId: job.id }));
           setJobs(jobs.filter((item) => item.id !== job.id));
 
           setConfirmationMessage(
@@ -125,6 +180,17 @@ const JobListings = () => {
         </div>
       )}
 
+      {isRecruiter && (
+        <div className="my-6">
+          <button
+            onClick={() => navigate("/postjob")}
+            className="py-3 px-8 bg-green-600 hover:opacity-70 rounded-lg text-white text-lg font-bold transition-opacity"
+          >
+            + Post New Job
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div>
           <p className="text-white text-lg font-bold">Loading...</p>
@@ -142,6 +208,8 @@ const JobListings = () => {
           onApply={openApplicationModal}
           onDelete={deleteJob}
           setSelectedJob={setSelectedJob}
+          applicationStatuses={applicationStatuses}
+          onCancelApplication={handleCancelApplication}
         />
       ) : (
         <div>

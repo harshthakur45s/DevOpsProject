@@ -25,9 +25,16 @@ const authSlice = createSlice({
         state.userData?.jobIds?.push(action.payload.jobId);
       }
     },
+    removeJobIdFromRecruiter: (state, action) => {
+      if (state.isRecruiter && state.userData?.jobIds) {
+        state.userData.jobIds = state.userData.jobIds.filter(
+          (id) => id !== action.payload.jobId
+        );
+      }
+    },
   },
 });
 
-export const { login, logout, addJobIdToRecruiter } = authSlice.actions;
+export const { login, logout, addJobIdToRecruiter, removeJobIdFromRecruiter } = authSlice.actions;
 
 export default authSlice.reducer;
